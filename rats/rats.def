@@ -1,0 +1,20 @@
+Bootstrap: docker
+From: debian:bookworm
+
+%files
+	execute.sh /usr/local/bin/execute.sh
+
+%post
+	export DEBIAN_FRONTEND=noninteractive
+	apt-get update
+	apt-get install -y git vim build-essential libexpat1-dev
+	git clone https://github.com/andrew-d/rough-auditing-tool-for-security.git /rats
+	cd /rats && git checkout 4ba54ce278e9fb004d978e924fd63c29e449ca81 && \
+		./configure && make && make install
+	chmod +x /usr/local/bin/execute.sh
+
+%environment
+	export RATS_COMMIT=4ba54ce278e9fb004d978e924fd63c29e449ca81
+
+%runscript
+	exec /usr/local/bin/execute.sh "$@"

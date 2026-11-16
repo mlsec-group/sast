@@ -1,0 +1,26 @@
+Bootstrap: docker
+From: debian:bookworm
+
+%files
+	execute.sh /usr/local/bin/execute.sh
+
+%post
+	export DEBIAN_FRONTEND=noninteractive
+	export SEMGREP_RULES_COMMIT=1e167a89741f2e61c791b381afe72414fb11beb5
+	export CPPCHECK_COMMIT=f4cfed674c20e6991e3726b7e275cf96fc965b29
+	apt-get update
+	apt-get install -y git vim python3 python3-pip
+	pip3 install --break-system-packages semgrep==1.103.0
+	git clone https://github.com/0xdea/semgrep-rules.git /semgrep-rules
+	cd /semgrep-rules && git checkout "${SEMGREP_RULES_COMMIT}" && \
+		echo ".github/" > .semgrepignore
+	git clone https://github.com/danmar/cppcheck.git /cppcheck
+	cd /cppcheck && git checkout "${CPPCHECK_COMMIT}"
+	chmod +x /usr/local/bin/execute.sh
+
+%environment
+	export SEMGREP_RULES_COMMIT=1e167a89741f2e61c791b381afe72414fb11beb5
+	export CPPCHECK_COMMIT=f4cfed674c20e6991e3726b7e275cf96fc965b29
+
+%runscript
+	exec /usr/local/bin/execute.sh "$@"
